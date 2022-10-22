@@ -31,9 +31,9 @@ class CdnEngine_S3_Compatible extends CdnEngine_Base {
 				'cname' => array(),
 			), $config );
 
-		$this->_s3 = new \S3Compatible( $config['key'], $config['secret'], false,
+		$this->_s3 = new \S3Compatible( $config['key'], $config['secret'], true,
 			$config['api_host'] );
-		$this->_s3->setSignatureVersion( 'v2' );
+		$this->_s3->setSignatureVersion( 'v4' );
 
 		parent::__construct( $config );
 	}

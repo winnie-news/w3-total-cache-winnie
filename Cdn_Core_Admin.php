@@ -741,52 +741,21 @@ WHERE p.post_type = "attachment" AND (pm.meta_value IS NOT NULL OR pm2.meta_valu
 		$cdn_engine = $this->_config->get_string( 'cdn.engine' );
 
 		switch ( true ) {
-		case ( $cdn_engine == 'ftp' && !count( $this->_config->get_array( 'cdn.ftp.domain' ) ) ):
+			case ( $cdn_engine == 's3' && ( $this->_config->get_string( 'cdn.s3.key' ) == '' || $this->_config->get_string( 'cdn.s3.secret' ) == '' || $this->_config->get_string( 'cdn.s3.bucket' ) == '' ) ):
+			case ( $cdn_engine == 'cf2' && ( $this->_config->get_string( 'cdn.cf2.key' ) == '' || $this->_config->get_string( 'cdn.cf2.secret' ) == '' || ( $this->_config->get_string( 'cdn.cf2.id' ) == '' && ! count( $this->_config->get_array( 'cdn.cf2.cname' ) ) ) ) ):
+			case ( $cdn_engine == 'cf' && ( $this->_config->get_string( 'cdn.cf.key' ) == '' || $this->_config->get_string( 'cdn.cf.secret' ) == '' || $this->_config->get_string( 'cdn.cf.bucket' ) == '' || ( $this->_config->get_string( 'cdn.cf.id' ) == '' && ! count( $this->_config->get_array( 'cdn.cf.cname' ) ) ) ) ):
+			case ( $cdn_engine == 'rscf' && ( $this->_config->get_string( 'cdn.rscf.user' ) == '' || $this->_config->get_string( 'cdn.rscf.key' ) == '' || $this->_config->get_string( 'cdn.rscf.container' ) == '' || ! count( $this->_config->get_array( 'cdn.rscf.cname' ) ) ) ):
+			case ( $cdn_engine == 'azure' && ( $this->_config->get_string( 'cdn.azure.user' ) == '' || $this->_config->get_string( 'cdn.azure.key' ) == '' || $this->_config->get_string( 'cdn.azure.container' ) == '' ) ):
+			case ( $cdn_engine == 'mirror' && ! count( $this->_config->get_array( 'cdn.mirror.domain' ) ) ):
+			case ( $cdn_engine == 'maxcdn' ):
+			case ( $cdn_engine == 'cotendo' && ! count( $this->_config->get_array( 'cdn.cotendo.domain' ) ) ):
+			case ( $cdn_engine == 'edgecast' && ! count( $this->_config->get_array( 'cdn.edgecast.domain' ) ) ):
+			case ( $cdn_engine == 'att' && ! count( $this->_config->get_array( 'cdn.att.domain' ) ) ):
+			case ( $cdn_engine == 'akamai' && ! count( $this->_config->get_array( 'cdn.akamai.domain' ) ) ):
+			case ( $cdn_engine == 'ftp' && !count( $this->_config->get_array( 'cdn.ftp.domain' ) ) ):
 			$running = false;
 			break;
 
-		case ( $cdn_engine == 's3' && ( $this->_config->get_string( 'cdn.s3.key' ) == '' || $this->_config->get_string( 'cdn.s3.secret' ) == '' || $this->_config->get_string( 'cdn.s3.bucket' ) == '' ) ):
-			$running = false;                    break;
-
-		case ( $cdn_engine == 'cf' && ( $this->_config->get_string( 'cdn.cf.key' ) == '' || $this->_config->get_string( 'cdn.cf.secret' ) == '' || $this->_config->get_string( 'cdn.cf.bucket' ) == '' || ( $this->_config->get_string( 'cdn.cf.id' ) == '' && !count( $this->_config->get_array( 'cdn.cf.cname' ) ) ) ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'cf2' && ( $this->_config->get_string( 'cdn.cf2.key' ) == '' || $this->_config->get_string( 'cdn.cf2.secret' ) == '' || ( $this->_config->get_string( 'cdn.cf2.id' ) == '' && !count( $this->_config->get_array( 'cdn.cf2.cname' ) ) ) ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'rscf' && ( $this->_config->get_string( 'cdn.rscf.user' ) == '' || $this->_config->get_string( 'cdn.rscf.key' ) == '' || $this->_config->get_string( 'cdn.rscf.container' ) == '' || !count( $this->_config->get_array( 'cdn.rscf.cname' ) ) ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'azure' && ( $this->_config->get_string( 'cdn.azure.user' ) == '' || $this->_config->get_string( 'cdn.azure.key' ) == '' || $this->_config->get_string( 'cdn.azure.container' ) == '' ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'mirror' && !count( $this->_config->get_array( 'cdn.mirror.domain' ) ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'maxcdn' ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'cotendo' && !count( $this->_config->get_array( 'cdn.cotendo.domain' ) ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'edgecast' && !count( $this->_config->get_array( 'cdn.edgecast.domain' ) ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'att' && !count( $this->_config->get_array( 'cdn.att.domain' ) ) ):
-			$running = false;
-			break;
-
-		case ( $cdn_engine == 'akamai' && !count( $this->_config->get_array( 'cdn.akamai.domain' ) ) ):
-			$running = false;
-			break;
 		}
 		return $running;
 	}
