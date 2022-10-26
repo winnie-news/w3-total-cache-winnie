@@ -403,7 +403,7 @@ class S3Compatible {
 	 *
 	 * @return boolean
 	 */
-	public static function putObject( $input, $bucket, $uri, $acl = self::ACL_PRIVATE, $metaHeaders = array(), $requestHeaders = array(), $storageClass = self::STORAGE_CLASS_STANDARD, $serverSideEncryption = self::SSE_NONE ) {
+	public static function putObject( $input, $bucket, $uri, $acl = self::ACL_PUBLIC_READ, $metaHeaders = array(), $requestHeaders = array(), $storageClass = self::STORAGE_CLASS_STANDARD, $serverSideEncryption = self::SSE_NONE ) {
 		if ( $input === false ) {
 			return false;
 		}
@@ -442,7 +442,7 @@ class S3Compatible {
 		// Custom request headers (Content-Type, Content-Disposition, Content-Encoding)
 		if ( is_array( $requestHeaders ) ) {
 			foreach ( $requestHeaders as $h => $v ) {
-				strpos( $h, 'x-amz-' ) === 0 ? $rest->setAmzHeader( $h, $v ) : $rest->setHeader( $h, $v );
+				str_starts_with( $h, 'x-amz-' ) ? $rest->setAmzHeader( $h, $v ) : $rest->setHeader( $h, $v );
 			}
 		} else if ( is_string( $requestHeaders ) ) // Support for legacy contentType parameter
 		{
@@ -481,7 +481,9 @@ class S3Compatible {
 				$rest->setAmzHeader( 'x-amz-content-sha256', $input['sha256sum'] );
 			}
 
-//			$rest->setAmzHeader( 'x-amz-acl', $acl );
+			if ( ! str_contains( $uri, 'r2.cloudflarestorage.com' ) ) {
+				$rest->setAmzHeader( 'x-amz-acl', $acl );
+			}
 			foreach ( $metaHeaders as $h => $v ) {
 				$rest->setAmzHeader( 'x-amz-meta-' . $h, $v );
 			}
@@ -555,8 +557,9 @@ class S3Compatible {
 			} else if ( ( $rest->fp = @fopen( $saveTo, 'wb' ) ) !== false ) {
 				$rest->file = realpath( $saveTo );
 			} else {
-				$rest->response->error = array( 'code'    => 0,
-				                                'message' => 'Unable to open save file for writing: ' . $saveTo
+				$rest->response->error = array(
+					'code'    => 0,
+					'message' => 'Unable to open save file for writing: ' . $saveTo
 				);
 			}
 		}
