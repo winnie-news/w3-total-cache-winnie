@@ -115,7 +115,7 @@ class S3Compatible {
 	 * @access public
 	 * @static
 	 */
-	public static $useSSLVersion = 1; //CURL_SSLVERSION_TLSv1;
+	public static $useSSLVersion = CURL_SSLVERSION_TLSv1_1; //CURL_SSLVERSION_TLSv1;
 
 	/**
 	 * Use PHP exceptions?
@@ -492,10 +492,10 @@ class S3Compatible {
 			$rest->response->error = array( 'code' => 0, 'message' => 'Missing input parameters' );
 		}
 
-		if ( $rest->response->error === false && $rest->response->code !== 200 ) {
+		if ( ! $rest->response->error && $rest->response->code !== 200 ) {
 			$rest->response->error = array( 'code' => $rest->response->code, 'message' => 'Unexpected HTTP status' );
 		}
-		if ( $rest->response->error !== false ) {
+		if ( $rest->response->error ) {
 			self::triggerError( sprintf( "S3Compatible::putObject(): [%s] %s",
 				$rest->response->error['code'], $rest->response->error['message'] ), __FILE__, __LINE__ );
 
@@ -547,7 +547,8 @@ class S3Compatible {
 	 * @param string $uri Object URI
 	 * @param mixed $saveTo Filename or resource to write to
 	 *
-	 * @return mixed
+	 * @return false|object|STDClass
+	 * @throws S3Exception
 	 */
 	public static function getObject( $bucket, $uri, $saveTo = false ) {
 		$rest = new S3Request( 'GET', $bucket, $uri, self::$endpoint );
@@ -589,6 +590,7 @@ class S3Compatible {
 	 * @param boolean $returnInfo Return response information
 	 *
 	 * @return mixed | false
+	 * @throws S3Exception
 	 */
 	public static function getObjectInfo( $bucket, $uri, $returnInfo = true ) {
 		$rest = new S3Request( 'HEAD', $bucket, $uri, self::$endpoint );
@@ -614,6 +616,7 @@ class S3Compatible {
 	 * @param string $uri Object URI
 	 *
 	 * @return boolean
+	 * @throws S3Exception
 	 */
 	public static function deleteObject( $bucket, $uri ) {
 		$rest = new S3Request( 'DELETE', $bucket, $uri, self::$endpoint );
@@ -686,7 +689,7 @@ class S3Compatible {
 	/**
 	 * Generate the headers for AWS Signature V4
 	 *
-	 * @param array $aheaders amzHeaders
+	 * @param array $aHeaders amzHeaders
 	 * @param array $headers
 	 * @param string $method
 	 * @param string $uri
@@ -905,7 +908,7 @@ final class S3Request {
 	 * @param string $uri Object URI
 	 * @param string $endpoint AWS endpoint URI
 	 *
-	 * @return mixed
+	 * @return S3Request
 	 */
 	function __construct( $verb, $bucket = '', $uri = '', $endpoint = 's3.amazonaws.com' ) {
 
@@ -1235,16 +1238,16 @@ final class S3Request {
 	 * @return boolean
 	 */
 	private function dnsBucketName( $bucket ) {
-		if ( strlen( $bucket ) > 63 || preg_match( "/[^a-z0-9\.-]/", $bucket ) > 0 ) {
+		if ( strlen( $bucket ) > 63 || preg_match( "/[^a-z0-9.-]/", $bucket ) > 0 ) {
 			return false;
 		}
-		if ( S3Compatible::$useSSL && strstr( $bucket, '.' ) !== false ) {
+		if ( S3Compatible::$useSSL && str_contains( $bucket, '.' ) ) {
 			return false;
 		}
-		if ( strstr( $bucket, '-.' ) !== false ) {
+		if ( str_contains( $bucket, '-.' ) ) {
 			return false;
 		}
-		if ( strstr( $bucket, '..' ) !== false ) {
+		if ( str_contains( $bucket, '..' ) ) {
 			return false;
 		}
 		if ( ! preg_match( "/^[0-9a-z]/", $bucket ) ) {
@@ -1270,11 +1273,11 @@ final class S3Request {
 		if ( ( $strlen = strlen( $data ) ) <= 2 ) {
 			return $strlen;
 		}
-		if ( substr( $data, 0, 4 ) == 'HTTP' ) {
+		if ( str_starts_with( $data, 'HTTP' ) ) {
 			$this->response->code = (int) substr( $data, 9, 3 );
 		} else {
 			$data = trim( $data );
-			if ( strpos( $data, ': ' ) === false ) {
+			if ( ! str_contains( $data, ': ' ) ) {
 				return $strlen;
 			}
 			list( $header, $value ) = explode( ': ', $data, 2 );
